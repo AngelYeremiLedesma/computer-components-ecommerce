@@ -10,19 +10,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.aledesma.app.models.dao.ICategoryDao;
-import com.aledesma.app.models.dao.IProductDao;
 import com.aledesma.app.models.entity.Category;
 import com.aledesma.app.models.entity.Product;
+import com.aledesma.app.models.repositories.ICategoryRepository;
+import com.aledesma.app.models.repositories.IProductRepository;
 
 @Service
 public class ProductServiceImpl implements IProductService{
 
 	@Autowired
-	IProductDao productDao;
+	IProductRepository productRepository;
 	
 	@Autowired
-	ICategoryDao categoryDao;
+	ICategoryRepository categoryRepository;
 	
 	@Override
 	public ResponseEntity<?> getProductsByCategory(Long categoryId) {
@@ -30,7 +30,7 @@ public class ProductServiceImpl implements IProductService{
 		Map<String, Object> response = new HashMap<>();
 		
 		try {
-			Category category = categoryDao.findById(categoryId).orElse(null);
+			Category category = categoryRepository.findById(categoryId).orElse(null);
 			
 			if(category==null) {
 				response.put("error", "Category not found");
@@ -55,7 +55,7 @@ public class ProductServiceImpl implements IProductService{
 	@Override
 	public ResponseEntity<?> getAllProducts() {
 		Map<String, Object> response = new HashMap<>();
-		List<Product> products = (List<Product>)productDao.findAll();
+		List<Product> products = (List<Product>)productRepository.findAll();
 		response.put("products", products);
 		return new ResponseEntity<Map<String, Object>>(response,HttpStatus.OK);
 	}

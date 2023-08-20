@@ -16,29 +16,29 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.aledesma.app.exceptions.CartItemNotFoundException;
 import com.aledesma.app.exceptions.CustomerNotFoundException;
 import com.aledesma.app.exceptions.ProductNotFoundException;
-import com.aledesma.app.models.dao.ICartDao;
-import com.aledesma.app.models.dao.ICartItemDao;
-import com.aledesma.app.models.dao.ICustomerDao;
-import com.aledesma.app.models.dao.IProductDao;
 import com.aledesma.app.models.entity.Cart;
 import com.aledesma.app.models.entity.CartItem;
 import com.aledesma.app.models.entity.Customer;
 import com.aledesma.app.models.entity.Product;
+import com.aledesma.app.models.repositories.ICartRepository;
+import com.aledesma.app.models.repositories.ICartItemRepository;
+import com.aledesma.app.models.repositories.ICustomerRepository;
+import com.aledesma.app.models.repositories.IProductRepository;
 
 @Service
 public class CartServiceImpl implements ICartService{
 
 	@Autowired
-	ICartDao cartDao;
+	ICartRepository cartRepository;
 	
 	@Autowired
-	ICustomerDao customerDao;
+	ICustomerRepository customerRepository;
 	
 	@Autowired
-	IProductDao productDao;
+	IProductRepository productRepository;
 	
 	@Autowired
-	ICartItemDao cartItemDao;
+	ICartItemRepository cartItemRepository;
 	
 	@Override
 	public ResponseEntity<?> getCart(Long customerId) {
@@ -63,7 +63,7 @@ public class CartServiceImpl implements ICartService{
 			
 			Cart cart = findCartByCustomerId(customerId);
 			List<CartItem> cartItems = cart.getItems();
-			Product product = productDao.findById(productId).orElseThrow(()-> new ProductNotFoundException("Product Not Found"));
+			Product product = productRepository.findById(productId).orElseThrow(()-> new ProductNotFoundException("Product Not Found"));
 			
 			CartItem cartItem = cartItems.stream().filter((item)-> {return product.equals(item.getProduct());}).findFirst().orElse(null);
 			
@@ -73,11 +73,11 @@ public class CartServiceImpl implements ICartService{
 				cartItem = CartItem.builder().product(product).quantity(1).build();
 				cartItems.add(cartItem);
 			}
-			cartItemDao.save(cartItem);
+			cartItemRepository.save(cartItem);
 			
 			cart.setItems(cartItems);
 			cart.recalculateTotal();
-			cartDao.save(cart);
+			cartRepository.save(cart);
 			
 			response.put("cart", cart);
 			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
@@ -102,10 +102,10 @@ public class CartServiceImpl implements ICartService{
 			CartItem cartItem = cartItems.stream().filter((item)->{return item.getId().equals(itemId);}).findFirst().orElseThrow(()-> new CartItemNotFoundException("Cart Item Not Found"));
 			cartItem.setQuantity(quantity);
 			
-			cartItemDao.save(cartItem);
+			cartItemRepository.save(cartItem);
 			cart = findCartByCustomerId(customerId); 
 			cart.recalculateTotal();
-			cartDao.save(cart);
+			cartRepository.save(cart);
 			 
 
 			response.put("cart", cart);
@@ -129,10 +129,10 @@ public class CartServiceImpl implements ICartService{
 			Cart cart = findCartByCustomerId(customerId);
 			List<CartItem> cartItemsInitial = cart.getItems();
 			List<CartItem> cartItemsDeleted = cartItemsInitial.stream().filter((item)->{return item.getId()!=itemId;}).collect(Collectors.toList());
-			cartItemDao.deleteById(itemId);
+			cartItemRepository.deleteById(itemId);
 			cart.setItems(cartItemsDeleted);
 			cart.recalculateTotal();
-			cartDao.save(cart);
+			cartRepository.save(cart);
 			 
 
 			response.put("cart", cart);
@@ -155,12 +155,12 @@ public class CartServiceImpl implements ICartService{
 		try {
 			Cart cart = findCartByCustomerId(customerId);
 			Long cartId = cart.getId();
-			Customer customer = customerDao.findById(customerId).orElse(null);
+			Customer customer = customerRepository.findById(customerId).orElse(null);
 			Cart newCart = Cart.builder().build();
 			customer.setCart(newCart);
-			cartDao.save(newCart);
-			customerDao.save(customer);
-			cartDao.deleteById(cartId);
+			cartRepository.save(newCart);
+			customerRepository.save(customer);
+			cartRepository.deleteById(cartId);
 			response.put("message", "Cart Deleted Correctly");
 			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
 		}catch(DataAccessException e) {
@@ -173,11 +173,11 @@ public class CartServiceImpl implements ICartService{
 	}
 	
 	public Cart findCartByCustomerId(Long customerId) {
-		Customer customer = customerDao.findById(customerId).orElse(null);
+		Customer customer = customerRepository.findById(customerId).orElse(null);
 		if(customer==null) {
 			throw new CustomerNotFoundException("Customer Not Found");
 		}
-		Cart cart = cartDao.findById(customer.getCart().getId()).orElseThrow(() -> new RuntimeException(""));
+		Cart cart = cartRepository.findById(customer.getCart().getId()).orElseThrow(() -> new RuntimeException(""));
 		return cart;
 	}
 

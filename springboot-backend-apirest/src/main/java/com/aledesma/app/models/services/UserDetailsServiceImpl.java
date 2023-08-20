@@ -13,18 +13,18 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.aledesma.app.models.dao.IUserDao;
 import com.aledesma.app.models.entity.UserEntity;
+import com.aledesma.app.models.repositories.IUserRepository;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService{
 
 	@Autowired
-	private IUserDao userDao;
+	private IUserRepository userRepository;
 	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		UserEntity userEntity = userDao.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User : " + username + " not found."));
+		UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User : " + username + " not found."));
 		
 		Collection<? extends GrantedAuthority> authorities = userEntity.getRoleList().stream()
 				.map(role -> new SimpleGrantedAuthority("ROLE_".concat(role.getName())))

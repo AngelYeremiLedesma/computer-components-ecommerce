@@ -9,19 +9,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.aledesma.app.models.dao.ICategoryDao;
 import com.aledesma.app.models.entity.Category;
+import com.aledesma.app.models.repositories.ICategoryRepository;
 
 @Service
 public class CategoryServiceImpl implements ICategoryService{
 
 	@Autowired
-	ICategoryDao categoryDao;
+	ICategoryRepository categoryRepository;
 	
 	@Override
 	public ResponseEntity<?> getAllCategories() {
 		Map<String,Object> response = new HashMap<>();
-		List<String> categories = categoryDao.findAllCategoryNames();
+		List<String> categories = categoryRepository.findAllCategoryNames();
 		response.put("categories", categories);
 		return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
 	}

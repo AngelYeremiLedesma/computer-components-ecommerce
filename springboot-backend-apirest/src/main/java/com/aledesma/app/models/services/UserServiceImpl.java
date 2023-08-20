@@ -14,14 +14,14 @@ import org.springframework.stereotype.Service;
 
 import com.aledesma.app.dtos.CreateUserDto;
 import com.aledesma.app.exceptions.RoleNotFoundException;
-import com.aledesma.app.models.dao.ICartDao;
-import com.aledesma.app.models.dao.ICustomerDao;
-import com.aledesma.app.models.dao.IRoleDao;
-import com.aledesma.app.models.dao.IUserDao;
 import com.aledesma.app.models.entity.Cart;
 import com.aledesma.app.models.entity.Customer;
 import com.aledesma.app.models.entity.Role;
 import com.aledesma.app.models.entity.UserEntity;
+import com.aledesma.app.models.repositories.ICartRepository;
+import com.aledesma.app.models.repositories.ICustomerRepository;
+import com.aledesma.app.models.repositories.IRoleRepository;
+import com.aledesma.app.models.repositories.IUserRepository;
 
 import jakarta.mail.MessagingException;
 
@@ -29,19 +29,19 @@ import jakarta.mail.MessagingException;
 public class UserServiceImpl implements IUserService{
 
 	@Autowired
-	private IUserDao userDao;
+	private IUserRepository userRepository;
 	
 	@Autowired
 	PasswordEncoder passwordEncoder;
 	
 	@Autowired
-	IRoleDao roleDao;
+	IRoleRepository roleRepository;
 	
 	@Autowired
-	ICustomerDao customerDao;
+	ICustomerRepository customerRepository;
 	
 	@Autowired
-	ICartDao cartDao;
+	ICartRepository cartRepository;
 	
 	@Autowired 
 	IEmailService emailService;
@@ -55,7 +55,7 @@ public class UserServiceImpl implements IUserService{
 			
 			Set<Role> roles = createUserDto.getRoles().stream()
 			        .map((roleName) -> {
-			            Role role = roleDao.findByName(roleName)
+			            Role role = roleRepository.findByName(roleName)
 			                    .orElseThrow(() -> new RoleNotFoundException("No matching roles in the DB"));
 			            return role;
 			        })
@@ -66,8 +66,8 @@ public class UserServiceImpl implements IUserService{
 			if(roles.stream().noneMatch(role -> role.getName().equals("ADMIN"))) {
 			    Cart cart = Cart.builder().build(); 
 			    customer = Customer.builder().email(createUserDto.getEmail()).cart(cart).build();
-			    cartDao.save(cart); 
-			    customerDao.save(customer); 
+			    cartRepository.save(cart); 
+			    customerRepository.save(customer); 
 			}
 			
 			UserEntity userEntity = UserEntity.builder()
@@ -78,7 +78,7 @@ public class UserServiceImpl implements IUserService{
 					.customer(customer)
 					.build();
 			
-			userDao.save(userEntity);
+			userRepository.save(userEntity);
 			
 			/*
 			 * emailService.sendEmailWithFile("ledesma.ayala.angel.yeremi.21.1@gmail.com",

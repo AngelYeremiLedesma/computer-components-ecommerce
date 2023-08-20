@@ -38,7 +38,7 @@ public class CartRestController {
 		return cartService.modifyItemQuantity(customerId,itemId,quantity);
 	}
 	
-	@DeleteMapping(path = "/remove/{itemId}")
+	@DeleteMapping(path = "/remove-item/{itemId}")
 	public ResponseEntity<?> removeCartItem(@PathVariable Long customerId,@PathVariable Long itemId) {
 		return cartService.removeCartItem(customerId,itemId);
 	}

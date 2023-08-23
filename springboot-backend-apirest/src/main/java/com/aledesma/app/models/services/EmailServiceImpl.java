@@ -3,6 +3,7 @@ package com.aledesma.app.models.services;
 import java.io.File;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -16,13 +17,16 @@ public class EmailServiceImpl implements IEmailService{
 
 	@Autowired
 	private JavaMailSender mailSender;
+
+	@Value("${email.sender}")
+	private String emailSender;
 	
 	@Override
 	public void sendEmail(String toUser, String subject, String message) {
 
 		SimpleMailMessage mailMessage = new SimpleMailMessage();
 		
-		mailMessage.setFrom("angel27yeremi10ledesma01ayala@gmail.com");
+		mailMessage.setFrom(emailSender);
 		mailMessage.setTo(toUser);
 		mailMessage.setSubject(subject);
 		mailMessage.setText(message);

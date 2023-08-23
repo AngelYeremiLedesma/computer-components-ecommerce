@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.aledesma.app.models.services.AuthenticatedUserService;
 import com.aledesma.app.models.services.ICartService;
 
 @RestController
@@ -21,29 +22,35 @@ public class CartRestController {
 	@Autowired
 	ICartService cartService;
 	
+	@Autowired
+	private AuthenticatedUserService  authenticatedUserService;
+	
 	@GetMapping(path = "")
-	@PreAuthorize("permitAll()")
+	@PreAuthorize("@authenticatedUserService.hasCustomerId(#customerId)")
 	public ResponseEntity<?> showCustomerCart(@PathVariable Long customerId) {
 		return cartService.getCart(customerId);
 	}
 	
 	@PostMapping(path = "/add-item/{productId}")
-	@PreAuthorize("permitAll()")
+	@PreAuthorize("@authenticatedUserService.hasCustomerId(#customerId)")
 	public ResponseEntity<?> addItemToCart(@PathVariable Long customerId,@PathVariable Long productId) {
 		return cartService.addItemToCart(customerId,productId);
 	}
 	
 	@PutMapping(path = "/modify-item/{itemId}")
+	@PreAuthorize("@authenticatedUserService.hasCustomerId(#customerId)")
 	public ResponseEntity<?> modifyItemQuantity(@PathVariable Long customerId,@PathVariable Long itemId,@RequestParam(required = true) int quantity) {
 		return cartService.modifyItemQuantity(customerId,itemId,quantity);
 	}
 	
 	@DeleteMapping(path = "/remove-item/{itemId}")
+	@PreAuthorize("@authenticatedUserService.hasCustomerId(#customerId)")
 	public ResponseEntity<?> removeCartItem(@PathVariable Long customerId,@PathVariable Long itemId) {
 		return cartService.removeCartItem(customerId,itemId);
 	}
 	
 	@DeleteMapping(path = "/clear")
+	@PreAuthorize("@authenticatedUserService.hasCustomerId(#customerId)")
 	public ResponseEntity<?> deleteEntireCart(@PathVariable Long customerId) {
 		return cartService.deleteCart(customerId);
 	}

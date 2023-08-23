@@ -4,6 +4,6 @@ import org.springframework.http.ResponseEntity;
 
 public interface ICategoryService {
 	
-	public ResponseEntity<?> getAllCategories();
-	
+	ResponseEntity<?> getAllCategories();
+	ResponseEntity<?> getAllProductsInCategory(Long categoryId);
 }

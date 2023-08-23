@@ -12,7 +12,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 @Service
-public class EmailService implements IEmailService{
+public class EmailServiceImpl implements IEmailService{
 
 	@Autowired
 	private JavaMailSender mailSender;

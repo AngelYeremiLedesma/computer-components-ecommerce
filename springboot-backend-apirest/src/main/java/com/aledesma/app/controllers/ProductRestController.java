@@ -1,12 +1,10 @@
 package com.aledesma.app.controllers;
 
+import com.aledesma.app.models.services.RegistrationServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.aledesma.app.models.services.IProductService;
 
@@ -23,7 +21,19 @@ public class ProductRestController {
 		if(categoryId!=null) {
 			return productService.getProductsByCategory(categoryId);
 		}
-			return productService.getAllProducts();
+		return productService.getAllProducts();
+	}
+
+	@GetMapping(path = "/{productId}")
+	@PreAuthorize("permitAll()")
+	public ResponseEntity<?> showProductById(@RequestParam Long productId){
+		return productService.findProductById(productId);
+	}
+
+	@GetMapping(path = "/search")
+	@PreAuthorize("permitAll()")
+	public ResponseEntity<?> searchProducts(@RequestParam String keyword){
+		return productService.searchProductByKeyword(keyword);
 	}
 
 }

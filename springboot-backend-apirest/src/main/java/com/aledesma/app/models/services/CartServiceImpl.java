@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.aledesma.app.exceptions.CartItemNotFoundException;
+import com.aledesma.app.exceptions.CartNotFoundException;
 import com.aledesma.app.exceptions.CustomerNotFoundException;
 import com.aledesma.app.exceptions.ProductNotFoundException;
 import com.aledesma.app.models.entity.Cart;
@@ -26,158 +27,128 @@ import com.aledesma.app.models.repositories.ICustomerRepository;
 import com.aledesma.app.models.repositories.IProductRepository;
 
 @Service
-public class CartServiceImpl implements ICartService{
+public class CartServiceImpl implements ICartService {
 
 	@Autowired
 	ICartRepository cartRepository;
-	
+
 	@Autowired
 	ICustomerRepository customerRepository;
-	
+
 	@Autowired
 	IProductRepository productRepository;
-	
+
 	@Autowired
 	ICartItemRepository cartItemRepository;
-	
+
 	@Override
 	public ResponseEntity<?> getCart(Long customerId) {
-		Map<String,Object> response = new HashMap<>();
-		try {
-			Cart cart = findCartByCustomerId(customerId);
-			response.put("cart", cart);
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
-		}catch(DataAccessException e) {
-			response.put("error", "Error accessing the DB");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
-		}catch(CustomerNotFoundException e) {
-			response.put("error", "Customer Not Found");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
-		}
+		Map<String, Object> response = new HashMap<>();
+
+		Cart cart = findCartByCustomerId(customerId);
+		response.put("cart", cart);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+
 	}
 
 	@Override
-	public ResponseEntity<?> addItemToCart(Long customerId,Long productId) {
-		Map<String,Object> response = new HashMap<>();
-		try {
-			
-			Cart cart = findCartByCustomerId(customerId);
-			List<CartItem> cartItems = cart.getItems();
-			Product product = productRepository.findById(productId).orElseThrow(()-> new ProductNotFoundException("Product Not Found"));
-			
-			CartItem cartItem = cartItems.stream().filter((item)-> {return product.equals(item.getProduct());}).findFirst().orElse(null);
-			
-			if(cartItem!=null) {
-				cartItem.setQuantity(cartItem.getQuantity()+1);
-			}else {
-				cartItem = CartItem.builder().product(product).quantity(1).build();
-				cartItems.add(cartItem);
-			}
-			cartItemRepository.save(cartItem);
-			
-			cart.setItems(cartItems);
-			cart.recalculateTotal();
-			cartRepository.save(cart);
-			
-			response.put("cart", cart);
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
-		}catch(ProductNotFoundException e) {
-			response.put("error", "Product Not Found");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);			
-		}catch(DataAccessException e) {
-			response.put("error", "Error accessing the DB");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
-		}catch(CustomerNotFoundException e) {
-			response.put("error", "Customer Not Found");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
+	public ResponseEntity<?> addItemToCart(Long customerId, Long productId) {
+		Map<String, Object> response = new HashMap<>();
+
+		Cart cart = findCartByCustomerId(customerId);
+		List<CartItem> cartItems = cart.getItems();
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new ProductNotFoundException("Product Not Found"));
+
+		CartItem cartItem = cartItems.stream().filter((item) -> {
+			return product.equals(item.getProduct());
+		}).findFirst().orElse(null);
+
+		if (cartItem != null) {
+			cartItem.setQuantity(cartItem.getQuantity() + 1);
+		} else {
+			cartItem = CartItem.builder().product(product).quantity(1).build();
+			cartItems.add(cartItem);
 		}
+		cartItemRepository.save(cartItem);
+
+		cart.setItems(cartItems);
+		cart.recalculateTotal();
+		cartRepository.save(cart);
+
+		response.put("cart", cart);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+
 	}
 
 	@Override
-	public ResponseEntity<?> modifyItemQuantity(Long customerId,Long itemId,int quantity) {
-		Map<String,Object> response = new HashMap<>();
-		try {
-			Cart cart = findCartByCustomerId(customerId);
-			List<CartItem> cartItems = cart.getItems();
-			CartItem cartItem = cartItems.stream().filter((item)->{return item.getId().equals(itemId);}).findFirst().orElseThrow(()-> new CartItemNotFoundException("Cart Item Not Found"));
-			cartItem.setQuantity(quantity);
-			
-			cartItemRepository.save(cartItem);
-			cart = findCartByCustomerId(customerId); 
-			cart.recalculateTotal();
-			cartRepository.save(cart);
-			 
+	public ResponseEntity<?> modifyItemQuantity(Long customerId, Long itemId, int quantity) {
+		Map<String, Object> response = new HashMap<>();
 
-			response.put("cart", cart);
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
-		}catch(CartItemNotFoundException e) {
-			response.put("error", "Cart Item Not Found");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);	
-		}catch(DataAccessException e) {
-			response.put("error", "Error accessing the DB");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
-		}catch(CustomerNotFoundException e) {
-			response.put("error", "Customer Not Found");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
-		}
+		Cart cart = findCartByCustomerId(customerId);
+		List<CartItem> cartItems = cart.getItems();
+		CartItem cartItem = cartItems.stream().filter((item) -> {
+			return item.getId().equals(itemId);
+		}).findFirst().orElseThrow(() -> new CartItemNotFoundException("Cart Item Not Found"));
+		cartItem.setQuantity(quantity);
+
+		cartItemRepository.save(cartItem);
+		cart = findCartByCustomerId(customerId);
+		cart.recalculateTotal();
+		cartRepository.save(cart);
+
+		response.put("cart", cart);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+
 	}
 
 	@Override
-	public ResponseEntity<?> removeCartItem(Long customerId,Long itemId) {
-		Map<String,Object> response = new HashMap<>();
-		try {
-			Cart cart = findCartByCustomerId(customerId);
-			List<CartItem> cartItemsInitial = cart.getItems();
-			List<CartItem> cartItemsDeleted = cartItemsInitial.stream().filter((item)->{return item.getId()!=itemId;}).collect(Collectors.toList());
-			cartItemRepository.deleteById(itemId);
-			cart.setItems(cartItemsDeleted);
-			cart.recalculateTotal();
-			cartRepository.save(cart);
-			 
+	public ResponseEntity<?> removeCartItem(Long customerId, Long itemId) {
+		Map<String, Object> response = new HashMap<>();
 
-			response.put("cart", cart);
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
-		}catch(CartItemNotFoundException e) {
-			response.put("error", "Cart Item Not Found");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);	
-		}catch(DataAccessException e) {
-			response.put("error", "Error accessing the DB");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
-		}catch(CustomerNotFoundException e) {
-			response.put("error", "Customer Not Found");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
+		Cart cart = findCartByCustomerId(customerId);
+		List<CartItem> cartItemsInitial = cart.getItems();
+		Long itemCoincidences = cartItemsInitial.stream().filter((item)->{
+			return item.getId() == itemId;
+		}).count();
+		
+		if(itemCoincidences==0L) {
+			throw new CartItemNotFoundException("Cart Item Not Found");
 		}
+		
+		List<CartItem> cartItemsDeleted = cartItemsInitial.stream().filter((item) -> {
+			return item.getId() != itemId;
+		}).collect(Collectors.toList());
+		cartItemRepository.deleteById(itemId);
+		cart.setItems(cartItemsDeleted);
+		cart.recalculateTotal();
+		cartRepository.save(cart);
+
+		response.put("cart", cart);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+
 	}
 
 	@Override
 	public ResponseEntity<?> deleteCart(Long customerId) {
-		Map<String,Object> response = new HashMap<>();
-		try {
-			Cart cart = findCartByCustomerId(customerId);
-			Long cartId = cart.getId();
-			Customer customer = customerRepository.findById(customerId).orElse(null);
-			Cart newCart = Cart.builder().build();
-			customer.setCart(newCart);
-			cartRepository.save(newCart);
-			customerRepository.save(customer);
-			cartRepository.deleteById(cartId);
-			response.put("message", "Cart Deleted Correctly");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
-		}catch(DataAccessException e) {
-			response.put("error", "Error accessing the DB");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
-		}catch(CustomerNotFoundException e) {
-			response.put("error", "Customer Not Found");
-			return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
-		}
+		Map<String, Object> response = new HashMap<>();
+
+		Cart cart = findCartByCustomerId(customerId);
+		Long cartId = cart.getId();
+		Customer customer = customerRepository.findById(customerId).orElseThrow(() -> new CustomerNotFoundException("Customer Not Found"));
+		Cart newCart = Cart.builder().build();
+		customer.setCart(newCart);
+		cartRepository.save(newCart);
+		customerRepository.save(customer);
+		cartRepository.deleteById(cartId);
+		response.put("message", "Cart Deleted Correctly");
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+
 	}
-	
+
 	public Cart findCartByCustomerId(Long customerId) {
-		Customer customer = customerRepository.findById(customerId).orElse(null);
-		if(customer==null) {
-			throw new CustomerNotFoundException("Customer Not Found");
-		}
-		Cart cart = cartRepository.findById(customer.getCart().getId()).orElseThrow(() -> new RuntimeException(""));
+		Customer customer = customerRepository.findById(customerId).orElseThrow(() -> new CustomerNotFoundException("Customer Not Found"));
+		Cart cart = cartRepository.findById(customer.getCart().getId()).orElseThrow(() -> new CartNotFoundException("Cart Not Found"));
 		return cart;
 	}
 

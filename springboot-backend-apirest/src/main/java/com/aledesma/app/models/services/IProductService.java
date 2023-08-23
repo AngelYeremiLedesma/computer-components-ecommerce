@@ -4,8 +4,11 @@ import org.springframework.http.ResponseEntity;
 
 public interface IProductService {
 
-	public ResponseEntity<?> getProductsByCategory(Long cateogryId);
+	ResponseEntity<?> getProductsByCategory(Long cateogryId);
 	
-	public ResponseEntity<?> getAllProducts();
-	
+	ResponseEntity<?> getAllProducts();
+
+    ResponseEntity<?> findProductById(Long productId);
+
+	ResponseEntity<?> searchProductByKeyword(String keyword);
 }

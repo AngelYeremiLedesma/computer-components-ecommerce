@@ -34,6 +34,9 @@ public class SecurityConfig {
 	@Autowired 
 	JwtAuthorizationFilter jwtAuthorizationFilter;
 	
+    @Autowired
+    private CustomAccessDeniedHandler customAccessDeniedHandler;
+	
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, AuthenticationManager authenticationManager) throws Exception{
 		
@@ -43,14 +46,18 @@ public class SecurityConfig {
 		return httpSecurity
                 .csrf(config -> config.disable())
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers(HttpMethod.POST, "/users/register").permitAll();
-                    auth.anyRequest().permitAll();//authenticated();
+                    auth.requestMatchers(HttpMethod.POST, "/sign-up").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/sign-up/confirm-email").permitAll();
+                    auth.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> {
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 })
                 .addFilter(jwtAuthenticationFilter)
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling()
+                .accessDeniedHandler(customAccessDeniedHandler)
+                .and()
                 .build();
 	}
 	

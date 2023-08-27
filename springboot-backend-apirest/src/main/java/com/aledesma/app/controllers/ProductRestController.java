@@ -16,7 +16,7 @@ public class ProductRestController {
 	IProductService productService;
 	
 	@GetMapping(path="")
-	@PreAuthorize("permitAll()")
+	@PreAuthorize("@authenticatedUserService.permitAll()")
 	public ResponseEntity<?> showProducts(@RequestParam(name = "category", required = false) Long categoryId){
 		if(categoryId!=null) {
 			return productService.getProductsByCategory(categoryId);
@@ -25,13 +25,13 @@ public class ProductRestController {
 	}
 
 	@GetMapping(path = "/{productId}")
-	@PreAuthorize("permitAll()")
+	@PreAuthorize("@authenticatedUserService.permitAll()")
 	public ResponseEntity<?> showProductById(@RequestParam Long productId){
 		return productService.findProductById(productId);
 	}
 
 	@GetMapping(path = "/search")
-	@PreAuthorize("permitAll()")
+	@PreAuthorize("@authenticatedUserService.permitAll()")
 	public ResponseEntity<?> searchProducts(@RequestParam String keyword){
 		return productService.searchProductByKeyword(keyword);
 	}

@@ -18,13 +18,13 @@ public class CategoryRestController {
 	ICategoryService categoryService;
 	
 	@GetMapping(path = "")
-	@PreAuthorize("permitAll()")
+	@PreAuthorize("@authenticatedUserService.permitAll()")
 	public ResponseEntity<?> getListedCategories() {
 		return categoryService.getAllCategories();
 	}
 
 	@GetMapping(path = "/{categoryId}")
-	@PreAuthorize("permitAll()")
+	@PreAuthorize("@authenticatedUserService.permitAll()")
 	public ResponseEntity<?> getProductsByCategory(@PathVariable Long categoryId){
 		return categoryService.getAllProductsInCategory(categoryId);
 	}

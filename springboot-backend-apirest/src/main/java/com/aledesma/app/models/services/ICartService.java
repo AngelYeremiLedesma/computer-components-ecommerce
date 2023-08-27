@@ -1,5 +1,6 @@
 package com.aledesma.app.models.services;
 
+import com.aledesma.app.models.entity.Cart;
 import org.springframework.http.ResponseEntity;
 
 public interface ICartService {
@@ -14,4 +15,5 @@ public interface ICartService {
 	
 	public ResponseEntity<?> deleteCart(Long customerId);
 
+	Cart findCartByCustomerId(Long customerId);
 }

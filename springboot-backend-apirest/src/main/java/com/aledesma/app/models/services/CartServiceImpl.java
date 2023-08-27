@@ -6,12 +6,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import com.aledesma.app.exceptions.CartItemNotFoundException;
 import com.aledesma.app.exceptions.CartNotFoundException;
@@ -146,6 +143,7 @@ public class CartServiceImpl implements ICartService {
 
 	}
 
+	@Override
 	public Cart findCartByCustomerId(Long customerId) {
 		Customer customer = customerRepository.findById(customerId).orElseThrow(() -> new CustomerNotFoundException("Customer Not Found"));
 		Cart cart = cartRepository.findById(customer.getCart().getId()).orElseThrow(() -> new CartNotFoundException("Cart Not Found"));

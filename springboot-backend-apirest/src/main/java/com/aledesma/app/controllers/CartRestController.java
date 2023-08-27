@@ -26,31 +26,31 @@ public class CartRestController {
 	private AuthenticatedUserService  authenticatedUserService;
 	
 	@GetMapping(path = "")
-	@PreAuthorize("@authenticatedUserService.hasCustomerId(#customerId)")
+	@PreAuthorize("@authenticatedUserService.hasCustomerIdOrIsAdmin(#customerId)")
 	public ResponseEntity<?> showCustomerCart(@PathVariable Long customerId) {
 		return cartService.getCart(customerId);
 	}
 	
 	@PostMapping(path = "/add-item/{productId}")
-	@PreAuthorize("@authenticatedUserService.hasCustomerId(#customerId)")
+	@PreAuthorize("@authenticatedUserService.hasCustomerIdOrIsAdmin(#customerId)")
 	public ResponseEntity<?> addItemToCart(@PathVariable Long customerId,@PathVariable Long productId) {
 		return cartService.addItemToCart(customerId,productId);
 	}
 	
 	@PutMapping(path = "/modify-item/{itemId}")
-	@PreAuthorize("@authenticatedUserService.hasCustomerId(#customerId)")
+	@PreAuthorize("@authenticatedUserService.hasCustomerIdOrIsAdmin(#customerId)")
 	public ResponseEntity<?> modifyItemQuantity(@PathVariable Long customerId,@PathVariable Long itemId,@RequestParam(required = true) int quantity) {
 		return cartService.modifyItemQuantity(customerId,itemId,quantity);
 	}
 	
 	@DeleteMapping(path = "/remove-item/{itemId}")
-	@PreAuthorize("@authenticatedUserService.hasCustomerId(#customerId)")
+	@PreAuthorize("@authenticatedUserService.hasCustomerIdOrIsAdmin(#customerId)")
 	public ResponseEntity<?> removeCartItem(@PathVariable Long customerId,@PathVariable Long itemId) {
 		return cartService.removeCartItem(customerId,itemId);
 	}
 	
 	@DeleteMapping(path = "/clear")
-	@PreAuthorize("@authenticatedUserService.hasCustomerId(#customerId)")
+	@PreAuthorize("@authenticatedUserService.hasCustomerIdOrIsAdmin(#customerId)")
 	public ResponseEntity<?> deleteEntireCart(@PathVariable Long customerId) {
 		return cartService.deleteCart(customerId);
 	}
